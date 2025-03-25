@@ -6,7 +6,7 @@ This is where evolution comes. If two species are morphologically different, the
 
 Two genes with similar sequences may perform similar functions. Genes like these are called homologous genes. Or, more precisely, in our case, these would be orthologous genes (see the figure below). A pair of orthologous genes are genes from two related species originating from a common ancestor (e.g., humans and chimpanzees). Due to the evolution, the two nucleotide or protein sequences (random accumulation of mutations due to drift or nonrandom accumulation of mutations due to selection) might differ slightly but not overwhelmingly.
 
-[ancestral-gene-orthologs.pdf](https://github.com/user-attachments/files/19440752/ancestral-gene-orthologs.pdf)
+<img width="1039" alt="Screenshot 2025-03-24 at 10 41 24 PM" src="https://github.com/user-attachments/assets/d638a709-1009-4a3d-a3f3-0e7a937f02b0" />
 
 Let's first set up our lab environment. Log into the cluster.
 
