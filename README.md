@@ -48,8 +48,6 @@ In the first part of this assignment, we will analyze several coronavirus genome
 
 To find the closest reference genomes, we will align the SARS-CoV-2 sequence to each candidate coronavirus genome. The virus genomes with the highest alignment scores will be our most closely-related viruses.
 
-Notice that computing an alignment between two sequences of length N and M and requires the computation of a dynamic programming table with NxM entries. The size of this matrix is sufficiently small for short sequences. But even the short genomes, like viral genomes, are generally too long for this approach. Instead of computing similarities from the entire genomes, we will only focus on the spike protein sequence. In general, we would prefer to align the whole nucleotide sequences, but for this assignment, considering only a spike protein will be sufficient. The spike protein is also one of the essential parts of any coronavirus, as it is the one that grants the virus entry to host cells.
-
 Below is a list of viruses we are going to pull from Entrez. It is list of coronaviruses and their corresponding NCBI accession codes. We have already copied over our SARS-CoV-2 genome.  
 
 ```python
@@ -178,11 +176,13 @@ Now we run the function.
 # Calculate and display lengths
 calculate_sequence_lengths(fasta_sequences, accession_codes)
 ```
-
 ## LQ10.4
 What is the name of the longest coronavirus sequence?
 
-Okay, now we need to do some aligning! Let's find some similar regions in each viral sequence. We spent a lot of time talking about the spike protein. Let's find the spike protein sequence first in SARS-CoV-2. Then we need to find that same sequence in all of the other genomes we just downloaded.
+Okay, now we need to do some aligning! Notice that computing an alignment between two sequences of length N and M and requires the computation of a dynamic programming table with NxM entries. The size of this matrix is sufficiently small for short sequences. But even the short genomes, like viral genomes, are generally too long for this approach. Instead of computing similarities from the entire genomes, we will only focus on the spike protein sequence. In general, we would prefer to align the whole nucleotide sequences, but for this assignment, considering only a spike protein will be sufficient. The spike protein is also one of the essential parts of any coronavirus, as it is the one that grants the virus entry to host cells.
+
+
+Let's find some similar regions in each viral sequence. We spent a lot of time talking about the spike protein. Let's find the spike protein sequence first in SARS-CoV-2. Then we need to find that same sequence in all of the other genomes we just downloaded.
 
 ```python
 from Bio import SeqIO
@@ -235,4 +235,87 @@ print(spike)
 ```
 ## L10.5
 Paste your command to extract the spike protein.
+
+
+We are now going to get all of the spike proteins from our genomes we downloaded.
+
+```python
+from Bio import SeqIO
+from Bio import Entrez
+import re
+
+def get_spike_sequence(accession):
+    Entrez.email = "your_email@example.com"
+    handle = Entrez.efetch(db="nucleotide", id=accession, rettype="gb", retmode="text")
+    record = SeqIO.read(handle, "genbank")
+    handle.close()
+
+    for feature in record.features:
+        if feature.type == "CDS":
+            if "gene" in feature.qualifiers and feature.qualifiers["gene"][0] == "S":
+                return feature.extract(record.seq)
+            elif "product" in feature.qualifiers and re.search(r"spike", feature.qualifiers["product"][0], re.IGNORECASE):
+                return feature.extract(record.seq)
+    
+    return None
+```
+
+Iterate through the accession codes and extract spike sequences:
+```python
+spike_sequences = {}
+
+for virus, accession in accession_codes.items():
+    spike_seq = get_spike_sequence(accession)
+    if spike_seq:
+        spike_sequences[virus] = spike_seq
+    else:
+        print(f"Spike sequence not found for {virus}")
+
+# Handle SARS-CoV-2 separately (note this gives slightly different output than our spike
+sars_cov2 = SeqIO.read("sars_cov_2.fasta", "fasta")
+spike_sequences["SARS-CoV-2"] = sars_cov2.seq[21561:25384]
+```
+## L10.6
+How does "spike" and "spike_sequences["SARS-CoV-2"]" differ? 
+
+
+We now are going to use a Needleman-Wusnch algorithm to align each sequence to our SARS-CoV-2 spike protein.
+
+```python
+import numpy as np
+
+def needleman_wunsch(seq1, seq2, match=1, mismatch=-1, gap=-1):
+    n, m = len(seq1), len(seq2)
+    score_matrix = np.zeros((m + 1, n + 1))
+    
+    for i in range(m + 1):
+        score_matrix[i][0] = i * gap
+    for j in range(n + 1):
+        score_matrix[0][j] = j * gap
+    
+    for i in range(1, m + 1):
+        for j in range(1, n + 1):
+            match_score = score_matrix[i - 1][j - 1] + (match if seq1[j - 1] == seq2[i - 1] else mismatch)
+            delete = score_matrix[i - 1][j] + gap
+            insert = score_matrix[i][j - 1] + gap
+            score_matrix[i][j] = max(match_score, delete, insert)
+    
+    return score_matrix[m][n]
+```
+
+```python
+# Assuming spike_sequences is a dictionary containing the spike protein sequences
+sars_cov2_spike = spike_sequences["SARS-CoV-2"]
+
+# Example usage with another spike sequences
+virus1 = "Human-SARS"
+
+alignment_score1 = needleman_wunsch(sars_cov2_spike, spike_sequences[virus1])
+
+print(f"Alignment score between SARS-CoV-2 and {virus1}: {alignment_score1}")
+```
+## L10.7
+What is the alignment score for Human-SARS?
+
+Your job is to now compare the alignment score to each genome. You can either code the functions by hand or, for five bonus points, you can write a loop to print each score. Happy scripting!
 
