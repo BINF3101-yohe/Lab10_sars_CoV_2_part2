@@ -13,9 +13,9 @@ Let's first set up our lab environment. Log into the cluster.
 ```bash
 mkdir lab_10
 cd lab_10
-module load python
 #we also need the sars_cov_2 genome for this lab
 cp /projects/class/binf3101_001/sars_cov_2.fasta ~/lab_10
+cd lab_10
 ```
 
 The human-banana example demonstrates that these two organisms don't have to be that closely related! If we tried to determine the gene function in humans using bananas as a reference, we could infer the role of over 60% of the genes. However, using two closely related organisms would undoubtedly give us more robust results. We would be better off choosing the genome of a mouse or a chimpanzee as our reference.
@@ -28,6 +28,7 @@ In order to find similar genes in other genomes that we know more about, we have
 
 ```bash
 #start python
+module load python
 python
 ```
 
@@ -84,7 +85,7 @@ accession_codes = {
 ### LQ10.1
 What is the 'type' of object we just made storing all the names of these sequences? Hint: We used this function last lab.
 
-You can easily read FASTA files using the SeqIO.read function from biopython.
+You can easily read FASTA files using the SeqIO.read function from biopython. Make the following function in your terminal. 
 
 ```python
 from Bio import Entrez
@@ -122,10 +123,16 @@ def fetch_coronavirus_fasta(accession_codes, email="your.email@example.com"):
             sequences[name] = None  # Store None for failed retrievals
     
     return sequences
+
+
 ```
+Now that we defined the function, we are going to run it.
+
+## LQ10.2
+What are the two variables we defined above that we use to run as input into the function?
 
 ```python
-fasta_sequences = fetch_coronavirus_fasta(accession_codes, email="your@email.com")
+fasta_sequences = fetch_coronavirus_fasta(accession_codes, email)
 
 # Save all sequences to a combined FASTA file
 with open("coronavirus_sequences.fasta", "w") as f:
@@ -136,3 +143,96 @@ with open("coronavirus_sequences.fasta", "w") as f:
 # Access individual FASTA string
 print(fasta_sequences["Human-SARS"][:200])  # Show first 200 characters
 ```
+
+## LQ10.3
+
+Show the first 200 characters of the bat coronavirus sequence that the first SARS-CoV-2 genome was first aligned to. Hint, this is the paper we read for Reading Quiz #12.
+
+
+Here is a function to get all of the sequences to print their lenghts nicesly.
+```python
+from Bio import Entrez
+from Bio import SeqIO
+from io import StringIO
+import time
+
+def calculate_sequence_lengths(sequences, accession_codes):
+    print("\n{:40} | {:15} | {}".format("Virus Name", "Accession", "Sequence Length"))
+    print("-" * 70)
+    
+    for name, accession in accession_codes.items():
+        fasta = sequences.get(name)
+        if not fasta:
+            print(f"{name[:40]:40} | {accession:15} | {'Retrieval failed':15}")
+            continue
+            
+        try:
+            record = SeqIO.read(StringIO(fasta), "fasta")
+            print(f"{name[:40]:40} | {accession:15} | {len(record.seq):,} bp")
+        except Exception as e:
+            print(f"{name[:40]:40} | {accession:15} | {'Invalid format':15}")
+```
+
+Now we run the function.
+```python
+# Calculate and display lengths
+calculate_sequence_lengths(fasta_sequences, accession_codes)
+```
+
+## LQ10.4
+What is the name of the longest coronavirus sequence?
+
+Okay, now we need to do some aligning! Let's find some similar regions in each viral sequence. We spent a lot of time talking about the spike protein. Let's find the spike protein sequence first in SARS-CoV-2. Then we need to find that same sequence in all of the other genomes we just downloaded.
+
+```python
+from Bio import SeqIO
+from Bio.Seq import Seq
+
+def extract_subsequence(file_path: str, strand: str, start: int, stop: int) -> str:
+    """
+    Extracts a subsequence from a local FASTA file with strand support.
+    
+    Args:
+        file_path: Path to the local FASTA file
+        strand: '+' for forward, '-' for reverse complement
+        start: 1-based start position (inclusive)
+        stop: 1-based end position (inclusive)
+        
+    Returns:
+        DNA sequence as string
+    """
+    # Read the FASTA file
+    with open(file_path, "r") as handle:
+        record = next(SeqIO.parse(handle, "fasta"))
+    
+    genome = record.seq
+    
+    # Validate positions
+    max_length = len(genome)
+    if not (1 <= start <= stop <= max_length):
+        raise ValueError(f"Positions must satisfy 1 ≤ start ≤ stop ≤ {max_length}")
+    
+    # Extract subsequence (0-based slicing)
+    subseq = genome[start-1:stop]
+    
+    # Handle reverse complement
+    if strand == "-":
+        subseq = subseq.reverse_complement()
+    elif strand != "+":
+        raise ValueError("Strand must be '+' or '-'")
+    
+    return str(subseq)
+
+```
+Now it is your turn to write out the function. The spike protein starts 21562 and ends at 25384. It is along the forward strand.
+
+```
+# Example usage
+file = "sars_cov_2.fasta"  # Replace with your actual file name
+#write out and run the function here with the proper inputs
+spike = extract_subsequence()
+print(spike)
+```
+## L10.5
+Paste your command to extract the spike protein.
+
