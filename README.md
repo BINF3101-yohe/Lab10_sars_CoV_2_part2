@@ -32,7 +32,7 @@ module load python
 python
 ```
 
-Let's get this party started. While in your py
+Let's get this party started. While in your python environment, lets import some important packages and commands.
 
 ```python
 import numpy as np
