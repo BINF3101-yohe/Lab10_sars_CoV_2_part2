@@ -60,22 +60,22 @@ accession_codes = {
     "Human-HCoV-HKU1": "NC_006577",
     
     # Bat
-    "Bat-CoV MOP1": "EU420138",
-    "Bat-CoV HKU8": "NC_010438",
-    "Bat-CoV HKU2": "NC_009988",
-    "Bat-CoV HKU5": "NC_009020",
-    "Bat-CoV RaTG13": "MN996532",
+    "Bat-CoV_MOP1": "EU420138",
+    "Bat-CoV_HKU8": "NC_010438",
+    "Bat-CoV_HKU2": "NC_009988",
+    "Bat-CoV_HKU5": "NC_009020",
+    "Bat-CoV_RaTG13": "MN996532",
     "Bat-CoV-ENT": "NC_003045",
     
     # Other animals
-    "Hedgehog-CoV 2012-174/GER/2012": "NC_039207",
-    "Pangolin-CoV MP789": "MT121216",
-    "Rabbit-CoV HKU14": "NC_017083",
-    "Duck-CoV isolate DK/GD/27/2014": "NC_048214",
-    "Feline infectious peritonitis virus": "NC_002306",  # cat
-    "Giraffe-CoV US/OH3/2003": "EF424623",
-    "Murine-CoV MHV/BHKR_lab/USA/icA59_L94P/2012": "KF268338",  # mouse
-    "Equine-CoV Obihiro12-2": "LC061274",  # horse
+    "Hedgehog-CoV_2012-174/GER/2012": "NC_039207",
+    "Pangolin-CoV_MP789": "MT121216",
+    "Rabbit-CoV_HKU14": "NC_017083",
+    "Duck-CoV_isolate DK/GD/27/2014": "NC_048214",
+    "Feline_infectious_peritonitis_virus": "NC_002306",  # cat
+    "Giraffe-CoV_US/OH3/2003": "EF424623",
+    "Murine-CoV_MHV/BHKR_lab/USA/icA59_L94P/2012": "KF268338",  # mouse
+    "Equine-CoV_Obihiro12-2": "LC061274",  # horse
 }
 ```
 
