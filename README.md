@@ -12,7 +12,6 @@ Let's first set up our lab environment. Log into the cluster.
 
 ```bash
 mkdir lab_10
-cd lab_10
 #we also need the sars_cov_2 genome for this lab
 cp /projects/class/binf3101_001/sars_cov_2.fasta ~/lab_10
 cd lab_10
@@ -229,7 +228,7 @@ Now it is your turn to write out the function. The spike protein starts 21562 an
 ```
 # Example usage
 file = "sars_cov_2.fasta"  # Replace with your actual file name
-#write out and run the function here with the proper inputs
+#Write out and run the function here with the proper inputs, you will need to adjust the code below to include the proper parameters.
 spike = extract_subsequence()
 print(spike)
 ```
@@ -245,7 +244,7 @@ from Bio import Entrez
 import re
 
 def get_spike_sequence(accession):
-    Entrez.email = "your_email@example.com"
+    Entrez.email = "lyohe1@charlotte.edu"
     handle = Entrez.efetch(db="nucleotide", id=accession, rettype="gb", retmode="text")
     record = SeqIO.read(handle, "genbank")
     handle.close()
