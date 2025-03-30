@@ -348,7 +348,6 @@ In the first part of the lab, we performed a global alignment (Needleman-Wuncsh)
 
 Key differences between multiple sequence alignment (MSA) and pairwise alignment:
 
-| -------- | ------- | ------- |
 |Feature    |Pairwise Alignment	 |Multiple Sequence Alignment |
 | -------- | ------- | ------- |
 |Scope    | 	Aligns two sequences	| Aligns ≥3 sequences simultaneously| 
@@ -357,7 +356,19 @@ Key differences between multiple sequence alignment (MSA) and pairwise alignment
 |Common algorithms| 	Needleman-Wunsch (global), Smith-Waterman (local)| 	Progressive methods (e.g., FFT-NS-2), iterative refinement (e.g., G-INS-i)
 |Output usage| 	Direct sequence comparison| 	Input for phylogenetic analysis, structural modeling| 
 
+
+In MAFFT, pairwise Smith-Waterman alignments inform the iterative refinement process in strategies like H-INS-i, where local alignment information gets incorporated into the multiple alignment objective function. We are first going to implement the H-INS-i function within MAFFT. MAFFT's H-INS-i method combines local pairwise alignment information with iterative refinement to improve multiple sequence alignment accuracy. 
+
+Core mechanism of H-INS-i:
+*Pairwise local alignment generation: Uses FASTA's Smith-Waterman implementation (fasta34) to compute all possible local alignments between sequence pairs.
+*Objective function construction: Creates a scoring system combining Weighted Sum-of-Pairs (WSP) score and an importance matrix derived from pairwise alignment consistency
+*Iterative refinement process: repeatedly optimizes the alignment through dynamic programming realignment of non-conserved regions and anchoring of conserved blocks to maintain structural integrity
+*Progressive incorporation of pairwise alignment evidence into the multiple alignment
+
+
+Here we are calling an external program within python. You can also run mafft as a standalone program, like we have previously done using the cluster.
 ```python
+python
 import subprocess
 
 #load our extracted spike protein sequences
@@ -365,6 +376,9 @@ in_file="spike_proteins_nucleotides.fasta"
 out_file="aligned_spike_local.fasta"
 subprocess.call(["mafft", "--maxiterate", "1000", "--localpair", "--out", out_file, in_file])
 ```
+This is going to take a minute or so to run. Pay attention to the output and the steps it is doing as it runs.
+
+Now we are going to align our sequences using a different algorithm, and happens to be the default within MAFFT, FFT-NS-2 (fast but rough). The key advantage of this approach is that it drastically reduces CPU time compared to traditional methods like CLUSTALW while maintaining comparable accuracy and is suitable for large datasets due to its computational speed. In contrast, H-INS-i focuses on refining alignments iteratively by incorporating pairwise local alignment information, making it better suited for datasets with complex sequence variability.
 
 ```python
 import subprocess
@@ -373,4 +387,14 @@ in_file="spike_proteins_nucleotides.fasta"
 out_file_2="aligned_spike_fast.fasta"
 subprocess.call(["mafft", "--out", "aligned.fasta", in_file])
 ```
+Notice how much faster this ran! Depending on your data set, you need to decide and defend which algorithm is best to use. Faster can come at the cost of lower accuracy. We are going to compare outcomes of using different alignemnt appraoches. Here is a summary of the differences. 
+
+|Feature	|FFT-NS-2	|H-INS-i    |
+| -------- | ------- | ------- |
+|Alignment Type    |Progressive    |Iterative refinement|
+|Algorithm Used|    Fast Fourier Transform (FFT)|	Smith-Waterman for local alignments|
+|Accuracy|    Good for conserved sequences|    Higher accuracy for variable domains|
+|Speed|    Faster due to FFT acceleration|	Slower due to iterative refinement|
+|Best Application|    Large datasets with conserved regions|    Complex alignments with variable domains|
+
 
