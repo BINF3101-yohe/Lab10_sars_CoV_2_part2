@@ -434,16 +434,16 @@ awk -v ORS= '/^>/ { $0 = (NR==1 ? "" : RS) $0 RS } END { printf RS }1' aligned_s
 awk 'BEGIN{FS="[> ]"} /^>/{val=$2;next}  {print val,length($0)}'   aligned_spike_local_chomp.fasta
 ```
 
-L10.10a
+## L10.10a
 
 TRUE or FALSE: All sequences in the an alignment file have the same sequence length.
 
-L10.10b
+## L10.10b
 The aligned sequences are (shorter/longer) than the unaligned sequences. The (FFT-NS-2/H-INS-i) algorithm resulted in a longer alignment file. This means this algorithm resulted in more (mutations/gaps/matches).
 
 The first step is to import the (already aligned) sequences into our program. Using AlignIO to read in the data, and store it in a variable aln_fast. Print aln_fast to confirm this step worked correctly.
 ```bash
-pyton
+python
 ```
 
 ```python
@@ -497,17 +497,17 @@ Great, you’re done! Except… you’re probably interested in how your tree tu
 Phylo.draw_ascii(tree_fast)
 Phylo.draw_ascii(tree_local)
 ```
-L10.11a
+## L10.11a
 Paste your two resulting trees. 
 
-L10.11b
+## L10.11b
 Do your trees agree with one another in terms of relationships? Describe two differences that you see.
 
-L10.11c
+## L10.11c
 If we know that "Feline_infectious_peritonitis_virus" is an outgroup, which of the two trees (fast or local) demonstrates a more accurate representation of this.
 
-L10.11d
+## L10.11d
 What are the three most closely related viruses to SARS-CoV-2 in the local tree? Are they the same in both trees? 
 
-L10.11e
+## L10.11e
 Were these three species the same species with the "top scores" of your Needleman-Wunsch pairwise alignments (Part 1 of the lab)?
