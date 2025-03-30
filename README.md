@@ -225,7 +225,7 @@ def extract_subsequence(file_path: str, strand: str, start: int, stop: int) -> s
 ```
 Now it is your turn to write out the function. The spike protein starts 21562 and ends at 25384. It is along the forward strand.
 
-```
+```python
 # Example usage
 file = "sars_cov_2.fasta"  # Replace with your actual file name
 #Write out and run the function here with the proper inputs, you will need to adjust the code below to include the proper parameters.
