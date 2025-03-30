@@ -350,7 +350,7 @@ Say we want to inspect how long each of our spike sequences are. (This function 
 ```bash
 awk 'BEGIN{FS="[> ]"} /^>/{val=$2;next}  {print val,length($0)}'    spike_proteins_nucleotides.fasta
 ```
-##L10.8a 
+## L10.8a 
 Why is it printing the length of sequences many times over for each species?
 
 Let's clean this up.
@@ -358,12 +358,12 @@ Let's clean this up.
 awk -v ORS= '/^>/ { $0 = (NR==1 ? "" : RS) $0 RS } END { printf RS }1' spike_proteins_nucleotides.fasta > spike_proteins_nucleotides_chomp.fasta
 awk 'BEGIN{FS="[> ]"} /^>/{val=$2;next}  {print val,length($0)}'    spike_proteins_nucleotides_chomp.fasta
 ```
-##L10.8b 
+## L10.8b 
 What did the first awk function in the above two lines of code do to transform our file?
 
 Notice they are not all the same length
 
-##L10.9
+## L10.9
 The longest spike protein in our dataset is _____ bp and it belongs to _____.
 
 
