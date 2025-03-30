@@ -318,3 +318,59 @@ What is the alignment score for Human-SARS?
 
 Your job is to now compare the alignment score to each genome. You can either code the functions by hand or, for five bonus points, you can write a loop to print each score. Happy scripting!
 
+Write this to .fasta file so we can access this file later on in Part 2 of the lab.
+
+```python
+from Bio.SeqRecord import SeqRecord  # Add this import at the top
+
+# Create records list for FASTA writing
+records = []
+for virus_name, sequence in spike_sequences.items():
+    record = SeqRecord(sequence, id=virus_name, description="")
+    records.append(record)
+
+# Write to FASTA file
+SeqIO.write(records, "spike_proteins_nucleotides.fasta", "fasta")
+```
+
+# PART 2: Multiple Sequence Alignment and Phylogenetics
+
+Multiple sequence alignment aligns multiple sequences, but its inner workings are a bit complicated. This type of alignment is used on a large number of more or less related sequences in order to infer homology and build evolutionary trees. My multiple sequence aligner of choice is mafft, which can be called from inside python.
+
+Assuming you are starting a new session, navigate to your lab_10 folder and in your bash terminal, we need to load MAFFT, 
+
+```bash
+cd lab_10
+module load python
+module load mafft
+```
+In the first part of the lab, we performed a global alignment (Needleman-Wuncsh). We have aslo learned how to do Smith-Waterman by hand, which performs a local alignment, and can be implmeented within the context of a multiple sequence alignment.
+
+Key differences between multiple sequence alignment (MSA) and pairwise alignment:
+
+| -------- | ------- | ------- |
+|Feature    |Pairwise Alignment	 |Multiple Sequence Alignment |
+| -------- | ------- | ------- |
+|Scope    | 	Aligns two sequences	| Aligns ≥3 sequences simultaneously| 
+|Complexity	| Less computationally intensive	| Requires heuristics due to NP-hard complexity| 
+|Biological context| 	Identifies local/global matches between two sequences| 	Preserves evolutionary relationships across all sequences| 
+|Common algorithms| 	Needleman-Wunsch (global), Smith-Waterman (local)| 	Progressive methods (e.g., FFT-NS-2), iterative refinement (e.g., G-INS-i)
+|Output usage| 	Direct sequence comparison| 	Input for phylogenetic analysis, structural modeling| 
+
+```python
+import subprocess
+
+#load our extracted spike protein sequences
+in_file="spike_proteins_nucleotides.fasta"
+out_file="aligned_spike_local.fasta"
+subprocess.call(["mafft", "--maxiterate", "1000", "--localpair", "--out", out_file, in_file])
+```
+
+```python
+import subprocess
+in_file="spike_proteins_nucleotides.fasta"
+
+out_file_2="aligned_spike_fast.fasta"
+subprocess.call(["mafft", "--out", "aligned.fasta", in_file])
+```
+
