@@ -248,7 +248,6 @@ def get_spike_sequence(accession):
     handle = Entrez.efetch(db="nucleotide", id=accession, rettype="gb", retmode="text")
     record = SeqIO.read(handle, "genbank")
     handle.close()
-
     for feature in record.features:
         if feature.type == "CDS":
             if "gene" in feature.qualifiers and feature.qualifiers["gene"][0] == "S":
@@ -344,7 +343,31 @@ cd lab_10
 module load python
 module load mafft
 ```
-In the first part of the lab, we performed a global alignment (Needleman-Wuncsh). We have aslo learned how to do Smith-Waterman by hand, which performs a local alignment, and can be implmeented within the context of a multiple sequence alignment.
+
+We also need to prep our sequences for alignment. We are going to align the nucleotide sequencees of the spike protein genes that we pulled from each coronavirus. However, a very pesky problem often occurs when FASTA files get written to output. Let's have a look.
+
+Say we want to inspect how long each of our spike sequences are. (This function is run in bash; it comes from Lab9)
+```bash
+awk 'BEGIN{FS="[> ]"} /^>/{val=$2;next}  {print val,length($0)}'    spike_proteins_nucleotides.fasta
+```
+##L10.8a 
+Why is it printing the length of sequences many times over for each species?
+
+Let's clean this up.
+```bash
+awk -v ORS= '/^>/ { $0 = (NR==1 ? "" : RS) $0 RS } END { printf RS }1' spike_proteins_nucleotides.fasta > spike_proteins_nucleotides_chomp.fasta
+awk 'BEGIN{FS="[> ]"} /^>/{val=$2;next}  {print val,length($0)}'    spike_proteins_nucleotides_chomp.fasta
+```
+##L10.8b 
+What did the first awk function in the above two lines of code do to transform our file?
+
+Notice they are not all the same length
+
+##L10.9
+The longest spike protein in our dataset is _____ bp and it belongs to _____.
+
+
+In the first part of the lab, we performed a global alignment (Needleman-Wuncsh). We have aslo learned how to do Smith-Waterman by hand, which performs a local alignment, and can be implemented within the context of a multiple sequence alignment.
 
 Key differences between multiple sequence alignment (MSA) and pairwise alignment:
 
@@ -372,7 +395,7 @@ python
 import subprocess
 
 #load our extracted spike protein sequences
-in_file="spike_proteins_nucleotides.fasta"
+in_file="spike_proteins_nucleotides_chomp.fasta"
 out_file="aligned_spike_local.fasta"
 subprocess.call(["mafft", "--maxiterate", "1000", "--localpair", "--out", out_file, in_file])
 ```
@@ -382,10 +405,10 @@ Now we are going to align our sequences using a different algorithm, and happens
 
 ```python
 import subprocess
-in_file="spike_proteins_nucleotides.fasta"
+in_file="spike_proteins_nucleotides_chomp.fasta"
 
 out_file_2="aligned_spike_fast.fasta"
-subprocess.call(["mafft", "--out", "aligned.fasta", in_file])
+subprocess.call(["mafft", "--out", "aligned_spike_fast.fasta", in_file])
 ```
 Notice how much faster this ran! Depending on your data set, you need to decide and defend which algorithm is best to use. Faster can come at the cost of lower accuracy. We are going to compare outcomes of using different alignemnt appraoches. Here is a summary of the differences. 
 
@@ -397,4 +420,94 @@ Notice how much faster this ran! Depending on your data set, you need to decide 
 |Speed|    Faster due to FFT acceleration|	Slower due to iterative refinement|
 |Best Application|    Large datasets with conserved regions|    Complex alignments with variable domains|
 
+Exit out of python.
+```python
+exit()
+```
 
+We again need to clean up the new lines in our files. In your bash terminal, perform the following:
+```bash
+awk -v ORS= '/^>/ { $0 = (NR==1 ? "" : RS) $0 RS } END { printf RS }1' aligned_spike_fast.fasta > aligned_spike_fast_chomp.fasta
+awk 'BEGIN{FS="[> ]"} /^>/{val=$2;next}  {print val,length($0)}'   aligned_spike_fast_chomp.fasta
+
+awk -v ORS= '/^>/ { $0 = (NR==1 ? "" : RS) $0 RS } END { printf RS }1' aligned_spike_local.fasta > aligned_spike_local_chomp.fasta
+awk 'BEGIN{FS="[> ]"} /^>/{val=$2;next}  {print val,length($0)}'   aligned_spike_local_chomp.fasta
+```
+
+L10.10a
+
+TRUE or FALSE: All sequences in the an alignment file have the same sequence length.
+
+L10.10b
+The aligned sequences are (shorter/longer) than the unaligned sequences. The (FFT-NS-2/H-INS-i) algorithm resulted in a longer alignment file. This means this algorithm resulted in more (mutations/gaps/matches).
+
+The first step is to import the (already aligned) sequences into our program. Using AlignIO to read in the data, and store it in a variable aln_fast. Print aln_fast to confirm this step worked correctly.
+```bash
+pyton
+```
+
+```python
+from Bio import Phylo
+from Bio.Phylo.TreeConstruction import DistanceCalculator
+from Bio.Phylo.TreeConstruction import DistanceTreeConstructor
+from Bio import AlignIO
+
+# Read the alignment from a FASTA file
+aln_fast=AlignIO.read("aligned_spike_fast_chomp.fasta", "fasta")
+
+# Print the alignment to confirm it was read correctly
+print(aln_fast)
+```
+Repeat this with your local alignment file "aligned_spike_local_chomp.fasta" and name your variable "aln_local".
+
+Now that we have our data, we’re interested in how similar (or different) the sequences are from each other. The more similar, the more likely they are to be evolutionarily close. Therefore, we use a distance matrix to store information on how similar each DNA sequence is from every other sequence. We will creat a Distance Calculator object with the ‘identity’ model. Use it to calculate the distance matrix of the alignment, and store it in a variable "dm_fast".
+
+```python
+# Create a DistanceCalculator object with the 'identity' model
+calculator = DistanceCalculator('identity')
+
+# Calculate the distance matrix using the alignment
+dm_fast = calculator.get_distance(aln_fast)
+
+# Print the distance matrix to confirm it worked correctly
+print(dm_fast)
+```
+
+Repeat this for your "aln_local" variable and store your distance matrix for it as "dm_local".
+
+Now, the real magic… creating the phylogenetic tree! We can use our Distance Tree Constructor to make a tree from our distance matrix. We will use the UPGMA algorithm in Distance Tree Constructor to create a tree and store it in a variable "tree_fast".
+
+```python
+# Create a DistanceTreeConstructor object
+constructor = DistanceTreeConstructor()
+
+# Use the UPGMA algorithm to construct a tree
+tree_fast = constructor.upgma(dm_fast)
+
+# Print the resulting tree to confirm it worked correctly
+print(tree_fast)
+```
+
+Repeat this for your "dm_local" and store it as variable "tree_local".
+
+Great, you’re done! Except… you’re probably interested in how your tree turned out! The simplest way to visualize your tree is to use the following methods to plot.
+
+```python
+# Print the tree as ASCII art
+Phylo.draw_ascii(tree_fast)
+Phylo.draw_ascii(tree_local)
+```
+L10.11a
+Paste your two resulting trees. 
+
+L10.11b
+Do your trees agree with one another in terms of relationships? Describe two differences that you see.
+
+L10.11c
+If we know that "Feline_infectious_peritonitis_virus" is an outgroup, which of the two trees (fast or local) demonstrates a more accurate representation of this.
+
+L10.11d
+What are the three most closely related viruses to SARS-CoV-2 in the local tree? Are they the same in both trees? 
+
+L10.11e
+Were these three species the same species with the "top scores" of your Needleman-Wunsch pairwise alignments (Part 1 of the lab)?
